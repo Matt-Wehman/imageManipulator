@@ -19,10 +19,10 @@
             <HBox alignment="CENTER" prefHeight="75.0" prefWidth="602.0" spacing="5.0">
                <children>
                   <Button fx:id="buttonOpen" mnemonicParsing="false" onAction="#load" prefHeight="36.0" prefWidth="111.0" text="Open" />
-                  <Button fx:id="buttonSave" mnemonicParsing="false" prefHeight="36.0" prefWidth="111.0" text="Save" />
-                  <Button fx:id="buttonReload" mnemonicParsing="false" prefHeight="36.0" prefWidth="111.0" text="Reload" />
-                  <Button fx:id="buttonGray" mnemonicParsing="false" prefHeight="36.0" prefWidth="111.0" text="Grayscale" />
-                  <Button fx:id="buttonNegative" mnemonicParsing="false" prefHeight="36.0" prefWidth="111.0" text="Negative" />
+                  <Button fx:id="buttonSave" mnemonicParsing="false" onAction="#save" prefHeight="36.0" prefWidth="111.0" text="Save" />
+                  <Button fx:id="buttonReload" mnemonicParsing="false" onAction="#reload" prefHeight="36.0" prefWidth="111.0" text="Reload" />
+                  <Button fx:id="buttonGray" mnemonicParsing="false" onAction="#grayscale" prefHeight="36.0" prefWidth="111.0" text="Grayscale" />
+                  <Button fx:id="buttonNegative" mnemonicParsing="false" onAction="#negative" prefHeight="36.0" prefWidth="111.0" text="Negative" />
                </children>
                <opaqueInsets>
                   <Insets />
