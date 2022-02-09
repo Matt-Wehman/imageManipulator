@@ -6,8 +6,6 @@
  * Created: 2/7/2022
  */
 package wehmanm;
-
-
 import edu.msoe.cs1021.ImageUtil;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -15,8 +13,9 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -38,6 +37,10 @@ public class ImageIO {
      * Converts the green color of an image to grayscale version
      */
     public static final double GRAY_GREEN = .7152;
+    /**
+     * Multiplies color string value so it can be properly formatted
+     */
+    public static final int RGB = 255;
 
     /**
      * Reads path and returns image found at that path
@@ -153,16 +156,24 @@ public class ImageIO {
                 String colorStrings = "";
                 for (int x = 0; x < image.getWidth(); x++) {
                     Color color = pixels.getColor(x, y);
-                    colorStrings = colorStrings + color.toString() + "  ";
+                    String hex = String.format("#%02X%02X%02X",
+                            (int)(color.getRed() * RGB),
+                            (int)(color.getGreen() * RGB),
+                            (int)(color.getBlue() * RGB));
+                    colorStrings = colorStrings + hex + "  ";
                 }
                 fileLines.add(colorStrings);
             }
             for (String line : fileLines) {
                 writer.println(line);
             }
-        }catch (IOException e){
-            System.out.println("sucks");
-        }finally {
+        } catch (IOException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("File Warning");
+            alert.setHeaderText("Msoe file error");
+            alert.setContentText("Unable to write to msoe file");
+            alert.showAndWait();
+        } finally {
             if(writer != null) {
                 writer.close();
             }

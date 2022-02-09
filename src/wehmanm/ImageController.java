@@ -13,7 +13,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.image.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import java.io.File;
@@ -29,7 +33,7 @@ import static wehmanm.ImageIO.GRAY_RED;
  */
 public class ImageController {
 
-    private static final double GRAY_BLUE = .0722 ;
+    private static final double GRAY_BLUE = .0722;
     @FXML
     Button buttonReload = new Button();
 
@@ -60,25 +64,17 @@ public class ImageController {
     public void load(ActionEvent event) {
         boolean isTrue = false;
         while (!isTrue) {
-            try {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Open Resource File");
-                fileChooser.getExtensionFilters().addAll(
-                        new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.msoe"),
-                        new FileChooser.ExtensionFilter("All Files", "*.*"));
-                File selectedFile = fileChooser.showOpenDialog(null);
-                Path path = selectedFile.toPath();
-                originalImage = ImageIO.read(path);
-                setImagePath(path);
-                view.setImage(originalImage);
-                isTrue = true;
-            } catch (NullPointerException e) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("File Warning");
-                alert.setHeaderText("Wrong File Type");
-                alert.setContentText("Please select a png, jpg, or msoe file. ");
-                alert.showAndWait();
-            }
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Resource File");
+            File selectedFile;
+            fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.msoe"));
+            selectedFile = fileChooser.showOpenDialog(null);
+            Path path = selectedFile.toPath();
+            originalImage = ImageIO.read(path);
+            setImagePath(path);
+            view.setImage(originalImage);
+            isTrue = true;
         }
     }
     /**
@@ -88,11 +84,9 @@ public class ImageController {
         view.setImage(originalImage);
     }
     /**
-     * Saves new image to original file path
+     * Saves new image to path chosen by user
      */
     public void save(ActionEvent event){
-        //create another File chooser dialog
-        //show open dialog instead
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
         fileChooser.getExtensionFilters().addAll(
@@ -105,20 +99,25 @@ public class ImageController {
             String[] pathString = path.toString().split("\\.");
             if(pathString[1].equals("msoe")){
                 ImageIO.writeMSOE(view.getImage(), path);
-            }else {
+            } else {
                 ImageUtil.writeImage(path, view.getImage());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("File Warning");
+            alert.setHeaderText("Save error");
+            alert.setContentText("Cannot save file");
+            alert.showAndWait();
         }
     }
     /**
-     * Calls ImageIO.write and passes effect String
-     * Then sets this new image to the image view
+     * Makes image in imageview grayscaled
      */
     public void grayscale(ActionEvent event) {
         WritableImage writableImage = null;
-        writableImage = new WritableImage((int) view.getImage().getWidth(), (int) view.getImage().getHeight());
+        writableImage = new WritableImage(
+                (int) view.getImage().getWidth(),
+                (int) view.getImage().getHeight());
         PixelWriter pixelWriter = writableImage.getPixelWriter();
         PixelReader pixels = view.getImage().getPixelReader();
         for (int x = 0; x < writableImage.getWidth(); x++) {
@@ -134,12 +133,13 @@ public class ImageController {
         view.setImage(writableImage);
     }
     /**
-     * Calls ImageIO.write and passes effect String
-     * Then sets this new image to the image view
+     * Makes image in imageview negative
      */
     public void negative(ActionEvent event) {
         WritableImage writableImage = null;
-        writableImage = new WritableImage((int) view.getImage().getWidth(), (int) view.getImage().getHeight());
+        writableImage = new WritableImage(
+                (int) view.getImage().getWidth(),
+                (int) view.getImage().getHeight());
         PixelWriter pixelWriter = writableImage.getPixelWriter();
         PixelReader pixels = view.getImage().getPixelReader();
         for (int x = 0; x < writableImage.getWidth(); x++) {
