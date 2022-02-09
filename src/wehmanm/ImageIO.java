@@ -16,10 +16,12 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+
 /**
  * Image IO class is responsible for reading writing to files
  */
@@ -36,27 +38,28 @@ public class ImageIO {
      * Converts the green color of an image to grayscale version
      */
     public static final double GRAY_GREEN = .7152;
+
     /**
      * Reads path and returns image found at that path
      * If the file is a msoe file the method then calls readMSOE
      */
-    public static Image read(Path path){
+    public static Image read(Path path) {
         Image image = null;
         Scanner reader = null;
         try {
             reader = new Scanner(path);
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("bad");
         }
 
         try {
-            if(reader.nextLine().equals("MSOE")) {
+            if (reader.nextLine().equals("MSOE")) {
                 return readMSOE(path);
 
             } else {
                 image = ImageUtil.readImage(path);
             }
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("File Warning");
             alert.setHeaderText("File error");
@@ -71,55 +74,18 @@ public class ImageIO {
         }
         return image;
     }
+
     /**
      * Writes new pixel values to image and returns image
      * If the file is a msoe file the method then calls writeMSOE
      */
-    public static Image write(Image image, Path path, String effect) {
+    public static Image write(Image image, Path path) {
         Scanner reader = null;
         WritableImage writableImage = null;
         try {
             reader = new Scanner(path);
         } catch (IOException e) {
             System.out.println("bad");
-        }
-
-        try {
-
-            if (reader.nextLine().equals("MSOE")) {
-                return writeMSOE(image, path, effect);
-
-            } else if (effect.equals("grayscale")) {
-                writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
-                PixelWriter pixelWriter = writableImage.getPixelWriter();
-                PixelReader pixels = image.getPixelReader();
-                for (int x = 0; x < writableImage.getWidth(); x++) {
-                    for (int y = 0; y < writableImage.getHeight(); y++) {
-                        Color color = pixels.getColor(x, y);
-                        double r = color.getRed() * GRAY_RED;
-                        double g = color.getGreen() * GRAY_GREEN;
-                        double b = color.getBlue() * GRAY_BLUE;
-                        color = Color.color(r + b + g, r + b + g, r + b + g);
-                        pixelWriter.setColor(x, y, color);
-                    }
-                }
-            } else if (effect.equals("negative")) {
-                writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
-                PixelWriter pixelWriter = writableImage.getPixelWriter();
-                PixelReader pixels = image.getPixelReader();
-                for (int x = 0; x < writableImage.getWidth(); x++) {
-                    for (int y = 0; y < writableImage.getHeight(); y++) {
-                        Color color = pixels.getColor(x, y);
-                        double r = 1.0 - color.getRed();
-                        double g = 1.0 - color.getGreen();
-                        double b = 1.0 - color.getBlue();
-                        color = Color.color(r, g, b);
-                        pixelWriter.setColor(x, y, color);
-                    }
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
         }
         return writableImage;
     }
@@ -134,13 +100,13 @@ public class ImageIO {
         int imageWidth = 0;
         ArrayList<String> lines = new ArrayList();
         WritableImage writableImage;
-        try{
+        try {
             reader = new Scanner(path);
-            while(reader.hasNextLine()) {
+            while (reader.hasNextLine()) {
                 lines.add(reader.nextLine());
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("File Warning");
             alert.setHeaderText("File error");
@@ -148,76 +114,60 @@ public class ImageIO {
             alert.showAndWait();
 
         } finally {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
         }
         String[] widthHeight = (lines.get(1).split("\s+"));
         imageHieght = Integer.parseInt(widthHeight[0]);
         imageWidth = Integer.parseInt(widthHeight[1]);
-
         writableImage = new WritableImage(imageHieght, imageWidth);
         PixelWriter writer = writableImage.getPixelWriter();
-        for (int i = 2; i< lines.size(); i++){
+        for (int i = 2; i < lines.size(); i++) {
             String[] templine = (lines.get(i).split("\s+"));
-            for (int j = 0; j < templine.length; j++){
-                Color pixelColor = Color.web(templine[j]);
-                writer.setColor(j, i-2, pixelColor);
+            for (int j = 0; j < templine.length; j++) {
+                Color pixelColor = Color.valueOf(templine[j]);
+                writer.setColor(j, i - 2, pixelColor);
             }
         }
         return writableImage;
     }
+
     /**
      * Writes new pixel values to file and returns image
      * Only works for MSOE files
      */
-    public static Image writeMSOE(Image image, Path path, String effect){
-        Scanner reader = null;
-        WritableImage writableImage = null;
+    public static File writeMSOE(Image image, Path path) {
+        ArrayList<String> fileLines = new ArrayList<>();
+        int imageHeight = (int)image.getHeight();
+        int imageWidth = (int) image.getWidth();
+        PixelReader pixels = image.getPixelReader();
+        File msoeImage = new File(path.toString());
+        PrintWriter writer = null;
         try {
-            reader = new Scanner(path);
-        } catch (IOException e) {
-            System.out.println("bad");
-        }
-
-        try {
-            if (effect.equals("grayscale")) {
-                writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
-                PixelWriter pixelWriter = writableImage.getPixelWriter();
-                PixelReader pixels = image.getPixelReader();
-                for (int x = 0; x < writableImage.getWidth(); x++) {
-                    for (int y = 0; y < writableImage.getHeight(); y++) {
-                        Color color = pixels.getColor(x, y);
-                        double r = color.getRed() * GRAY_RED;
-                        double g = color.getGreen() * GRAY_GREEN;
-                        double b = color.getBlue() * GRAY_BLUE;
-                        color = Color.color(r + b + g, r + b + g, r + b + g);
-                        pixelWriter.setColor(x, y, color);
-                    }
+            writer = new PrintWriter(msoeImage);
+            writer.println("MSOE");
+            writer.print(imageWidth + " ");
+            writer.println(imageHeight);
+            for (int y = 0; y < image.getHeight(); y++) {
+                String colorStrings = "";
+                for (int x = 0; x < image.getWidth(); x++) {
+                    Color color = pixels.getColor(x, y);
+                    colorStrings = colorStrings + color.toString() + "  ";
                 }
-            } else if (effect.equals("negative")) {
-                writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
-                PixelWriter pixelWriter = writableImage.getPixelWriter();
-                PixelReader pixels = image.getPixelReader();
-                for (int x = 0; x < writableImage.getWidth(); x++) {
-                    for (int y = 0; y < writableImage.getHeight(); y++) {
-                        Color color = pixels.getColor(x, y);
-                        double r = 1.0 - color.getRed();
-                        double g = 1.0 - color.getGreen();
-                        double b = 1.0 - color.getBlue();
-                        color = Color.color(r, g, b);
-                        pixelWriter.setColor(x, y, color);
-                    }
-                }
+                fileLines.add(colorStrings);
             }
-        } catch (IllegalArgumentException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("File Warning");
-            alert.setHeaderText("File error");
-            alert.setContentText("Unable to write to file");
-            alert.showAndWait();
+            for (String line : fileLines) {
+                writer.println(line);
+            }
+        }catch (IOException e){
+            System.out.println("sucks");
+        }finally {
+            if(writer != null) {
+                writer.close();
+            }
         }
-        return writableImage;
+        return msoeImage;
     }
 }
 
