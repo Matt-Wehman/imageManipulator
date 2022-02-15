@@ -204,12 +204,12 @@ public class ImageIO {
      * Writes new pixel values to file and returns image
      * Only works for BMSOE files
      */
-    public static File writeBMSOE(Image image, Path path) throws IOException {
+    public static void writeBMSOE(Image image, Path path) throws IOException {
         ArrayList<Integer> pixelInts = new ArrayList<>();
         int imageHeight = (int) image.getHeight();
         int imageWidth = (int) image.getWidth();
         PixelReader pixels = image.getPixelReader();
-        File bmsoeImage = new File(path.toString());
+        File bmsoeImage = path.toFile();
         FileOutputStream fileOutputStream = null;
         DataOutputStream dataOutputStream = null;
         try{
@@ -234,7 +234,6 @@ public class ImageIO {
                 dataOutputStream.close();
             }
         }
-        return bmsoeImage;
     }
     /**
      * Converts integer value to color and returns the color
