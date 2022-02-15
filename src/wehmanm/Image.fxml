@@ -9,14 +9,14 @@
 
 <FlowPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="wehmanm.ImageController">
    <children>
-      <HBox prefHeight="324.0" prefWidth="599.0">
+      <HBox prefHeight="215.0" prefWidth="599.0">
          <children>
-            <ImageView fx:id="view" fitHeight="323.0" fitWidth="599.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="view" fitHeight="288.0" fitWidth="599.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </HBox>
-      <VBox prefHeight="400.0" prefWidth="601.0">
+      <VBox prefHeight="115.0" prefWidth="601.0">
          <children>
-            <HBox alignment="CENTER" prefHeight="75.0" prefWidth="602.0" spacing="5.0">
+            <HBox alignment="CENTER" prefHeight="58.0" prefWidth="601.0" spacing="5.0">
                <children>
                   <Button fx:id="buttonOpen" mnemonicParsing="false" onAction="#load" prefHeight="36.0" prefWidth="111.0" text="Open" />
                   <Button fx:id="buttonSave" mnemonicParsing="false" onAction="#save" prefHeight="36.0" prefWidth="111.0" text="Save" />
@@ -27,6 +27,13 @@
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="57.0" prefWidth="601.0" spacing="5.0">
+               <children>
+                  <Button fx:id="buttonRed" mnemonicParsing="false" onAction="#red" prefHeight="36.0" prefWidth="111.0" text="Red" />
+                  <Button fx:id="buttonRedGray" mnemonicParsing="false" onAction="#redGray" prefHeight="36.0" prefWidth="111.0" text="Red Gray" />
+                  <Button fx:id="buttonFilter" mnemonicParsing="false" onAction="#openWindow" prefHeight="36.0" prefWidth="111.0" text="Filter" />
+               </children>
             </HBox>
          </children>
       </VBox>

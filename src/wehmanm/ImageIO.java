@@ -1,19 +1,23 @@
 /*
  * Course: CS1021 - 051
  * Winter 2022
- * Lab 8 - Image manipulation
+ * Lab 9 - Image manipulation
  * Name: Matt Wehman
  * Created: 2/7/2022
  */
 package wehmanm;
 import edu.msoe.cs1021.ImageUtil;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -46,34 +50,22 @@ public class ImageIO {
      * Reads path and returns image found at that path
      * If the file is a msoe file the method then calls readMSOE
      */
-    public static Image read(Path path) {
+    public static Image read(Path path) throws IOException, IllegalArgumentException {
         Image image = null;
         Scanner reader = null;
-        try {
-            reader = new Scanner(path);
-        } catch (IOException e) {
-            System.out.println("bad");
-        }
-
-        try {
-            if (reader.nextLine().equals("MSOE")) {
+        DataInputStream input = null;
+        FileInputStream fileInputStream = null;
+        reader = new Scanner(path.toFile());
+        String[] pathSplit = path.toString().split("\\.");
+        fileInputStream = new FileInputStream(path.toFile());
+        if(pathSplit[1].equals("bmsoe")){
+            return readBMSOE(path);
+        } else if (reader.hasNextLine()) {
+            if(reader.nextLine().equals("MSOE")) {
                 return readMSOE(path);
-
-            } else {
-                image = ImageUtil.readImage(path);
             }
-        } catch (IllegalArgumentException e) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("File Warning");
-            alert.setHeaderText("File error");
-            alert.setContentText("Unable to read file");
-            alert.showAndWait();
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("File Warning");
-            alert.setHeaderText("File error");
-            alert.setContentText("Unable to read file");
-            alert.showAndWait();
+        } else {
+            return ImageUtil.readImage(path);
         }
         return image;
     }
@@ -108,14 +100,6 @@ public class ImageIO {
             while (reader.hasNextLine()) {
                 lines.add(reader.nextLine());
             }
-
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("File Warning");
-            alert.setHeaderText("File error");
-            alert.setContentText("Unable to read file");
-            alert.showAndWait();
-
         } finally {
             if (reader != null) {
                 reader.close();
@@ -140,9 +124,9 @@ public class ImageIO {
      * Writes new pixel values to file and returns image
      * Only works for MSOE files
      */
-    public static File writeMSOE(Image image, Path path) {
+    public static File writeMSOE(Image image, Path path) throws IOException {
         ArrayList<String> fileLines = new ArrayList<>();
-        int imageHeight = (int)image.getHeight();
+        int imageHeight = (int) image.getHeight();
         int imageWidth = (int) image.getWidth();
         PixelReader pixels = image.getPixelReader();
         File msoeImage = new File(path.toString());
@@ -157,9 +141,9 @@ public class ImageIO {
                 for (int x = 0; x < image.getWidth(); x++) {
                     Color color = pixels.getColor(x, y);
                     String hex = String.format("#%02X%02X%02X",
-                            (int)(color.getRed() * RGB),
-                            (int)(color.getGreen() * RGB),
-                            (int)(color.getBlue() * RGB));
+                            (int) (color.getRed() * RGB),
+                            (int) (color.getGreen() * RGB),
+                            (int) (color.getBlue() * RGB));
                     colorStrings = colorStrings + hex + "  ";
                 }
                 fileLines.add(colorStrings);
@@ -167,18 +151,114 @@ public class ImageIO {
             for (String line : fileLines) {
                 writer.println(line);
             }
-        } catch (IOException e){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("File Warning");
-            alert.setHeaderText("Msoe file error");
-            alert.setContentText("Unable to write to msoe file");
-            alert.showAndWait();
         } finally {
-            if(writer != null) {
+            if (writer != null) {
                 writer.close();
             }
         }
         return msoeImage;
+    }
+    /**
+     * Reads pixel values to file and returns image
+     * Only works for BMSOE files
+     */
+    public static Image readBMSOE(Path path) throws IOException {
+        FileInputStream fileInputStream = null;
+        DataInputStream dataInputStream = null;
+        WritableImage writableImage = null;
+        PixelWriter pixelWriter;
+        try {
+            fileInputStream = new FileInputStream(path.toFile());
+            dataInputStream = new DataInputStream(fileInputStream);
+            if((char)fileInputStream.read() != 'B'){
+                throw new IOException();
+            } else if((char)fileInputStream.read() != 'M'){
+                throw new IOException();
+            } else if((char)fileInputStream.read() != 'S'){
+                throw new IOException();
+            } else if((char)fileInputStream.read() != 'O'){
+                throw new IOException();
+            } else if((char)fileInputStream.read() != 'E'){
+                throw new IOException();
+            }
+            int imageWidth = dataInputStream.readInt();
+            int imageHeight = dataInputStream.readInt();
+            writableImage = new WritableImage(imageWidth, imageHeight);
+            pixelWriter = writableImage.getPixelWriter();
+            for(int y = 0; y < imageHeight; y++){
+                for(int x = 0; x < imageWidth; x++){
+                    int colorInt = dataInputStream.readInt();
+                    pixelWriter.setColor(x, y, intToColor(colorInt));
+                }
+            }
+        } finally {
+            if(dataInputStream != null){
+                dataInputStream.close();
+            }
+        }
+        return writableImage;
+    }
+
+
+    /**
+     * Writes new pixel values to file and returns image
+     * Only works for BMSOE files
+     */
+    public static File writeBMSOE(Image image, Path path) throws IOException {
+        ArrayList<Integer> pixelInts = new ArrayList<>();
+        int imageHeight = (int) image.getHeight();
+        int imageWidth = (int) image.getWidth();
+        PixelReader pixels = image.getPixelReader();
+        File bmsoeImage = new File(path.toString());
+        FileOutputStream fileOutputStream = null;
+        DataOutputStream dataOutputStream = null;
+        try{
+            fileOutputStream = new FileOutputStream(bmsoeImage);
+            dataOutputStream = new DataOutputStream(fileOutputStream);
+            fileOutputStream.write((int) 'B');
+            fileOutputStream.write((int) 'M');
+            fileOutputStream.write((int) 'S');
+            fileOutputStream.write((int) 'O');
+            fileOutputStream.write((int) 'E');
+            dataOutputStream.writeInt(imageWidth);
+            dataOutputStream.writeInt(imageHeight);
+            for(int y = 0; y < imageHeight; y++){
+                for(int x = 0; x < imageWidth; x++){
+                    Color color = pixels.getColor(x, y);
+                    int colorInt = colorToInt(color);
+                    dataOutputStream.writeInt(colorInt);
+                }
+            }
+        } finally {
+            if (dataOutputStream != null) {
+                try {
+                    dataOutputStream.close();
+                } catch (IOException e) {
+                    System.out.println("Cannot close stream");
+                }
+            }
+        }
+        return bmsoeImage;
+    }
+    /**
+     * Converts integer value to color and returns the color
+     */
+    private static Color intToColor(int color) {
+        double red = ((color >> 16) & 0x000000FF)/255.0;
+        double green = ((color >> 8) & 0x000000FF)/255.0;
+        double blue = (color & 0x000000FF)/255.0;
+        double alpha = ((color >> 24) & 0x000000FF)/255.0;
+        return new Color(red, green, blue, alpha);
+    }
+    /**
+     * Converts color to integer value and returns new int
+     */
+    private static int colorToInt(Color color) {
+        int red = ((int)(color.getRed()*255)) & 0x000000FF;
+        int green = ((int)(color.getGreen()*255)) & 0x000000FF;
+        int blue = ((int)(color.getBlue()*255)) & 0x000000FF;
+        int alpha = ((int)(color.getOpacity()*255)) & 0x000000FF;
+        return (alpha << 24) + (red << 16) + (green << 8) + blue;
     }
 }
 
