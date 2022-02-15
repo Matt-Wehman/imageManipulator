@@ -231,11 +231,7 @@ public class ImageIO {
             }
         } finally {
             if (dataOutputStream != null) {
-                try {
-                    dataOutputStream.close();
-                } catch (IOException e) {
-                    System.out.println("Cannot close stream");
-                }
+                dataOutputStream.close();
             }
         }
         return bmsoeImage;
