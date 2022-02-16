@@ -74,12 +74,6 @@ public class FilterController {
     protected void setImageController(ImageController imageController){
         this.imageController = imageController;
     }
-    /**
-     * Gets image view from image controller
-     */
-    public void data(Image image){
-        this.viewImage = image;
-    }
 
     @FXML
     protected void openWindow(ActionEvent event){
@@ -150,13 +144,7 @@ public class FilterController {
                 (Double.parseDouble(kernelBottomLeft.getText()) / sum),
                 (Double.parseDouble(kernelBottomCenter.getText()) / sum),
                 (Double.parseDouble(kernelBottomRight.getText()) / sum)};
+        imageController.setImageView(ImageUtil.convolve(imageController.getImage(), kernel));
 
-        String kernels = " ";
-        for(int i = 0; i < kernel.length; i++){
-            kernels = kernels + kernel[i] + "  ";
-        }
-        imageController.setImageView(ImageUtil.convolve(viewImage, kernel));
-        System.out.println(kernels);
-        //secondaryStage.hide();
     }
 }

@@ -95,10 +95,8 @@ public class ImageController {
             secondaryStage.hide();
         } else if(!secondaryStage.isShowing()){
             Stage currentStage = (Stage) primaryStage.getScene().getWindow();
-            controller.data(view.getImage());
             secondaryStage.setX(currentStage.getX() + currentStage.getWidth());
             secondaryStage.setY(currentStage.getY());
-            secondaryStage.getUserData();
             secondaryStage.show();
         }
     }
@@ -127,10 +125,12 @@ public class ImageController {
                 alert.setContentText("Cannot load file");
                 alert.showAndWait();
             }
+            secondaryStage.hide();
             view.setImage(originalImage);
             isTrue = true;
         }
     }
+
     /**
      * Reloads original image into image view
      */
@@ -221,7 +221,9 @@ public class ImageController {
     public void setImageView(Image image){
         view.setImage(image);
     }
-
+    /**
+     * Gets image in current imageview
+     */
     public Image getImage(){
         return this.view.getImage();
     }
