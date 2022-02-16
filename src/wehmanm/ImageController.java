@@ -105,30 +105,33 @@ public class ImageController {
      * Opens file chooser to let user select an image
      */
     public void load(ActionEvent event) {
-        boolean isTrue = false;
-        while (!isTrue) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open Resource File");
-            File selectedFile;
-            fileChooser.getExtensionFilters().addAll(
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        File selectedFile;
+        fileChooser.getExtensionFilters().addAll(
                         new FileChooser.ExtensionFilter(
                                 "Image Files", "*.png", "*.jpg", "*.msoe", "*.bmsoe"));
-            fileChooser.setInitialDirectory(new File("images"));
-            selectedFile = fileChooser.showOpenDialog(null);
+        fileChooser.setInitialDirectory(new File("images"));
+        selectedFile = fileChooser.showOpenDialog(null);
+        try {
             Path path = selectedFile.toPath();
-            try {
-                originalImage = ImageIO.read(path);
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("File Warning");
-                alert.setHeaderText("Load error");
-                alert.setContentText("Cannot load file");
-                alert.showAndWait();
-            }
-            secondaryStage.hide();
-            view.setImage(originalImage);
-            isTrue = true;
+            originalImage = ImageIO.read(path);
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("File Warning");
+            alert.setHeaderText("Load error");
+            alert.setContentText("Cannot load file");
+            alert.showAndWait();
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("File Warning");
+            alert.setHeaderText("Load error");
+            alert.setContentText("Please select a file to load");
+            alert.showAndWait();
         }
+        secondaryStage.hide();
+        view.setImage(originalImage);
     }
 
     /**
@@ -174,45 +177,83 @@ public class ImageController {
             alert.setHeaderText("Save error");
             alert.setContentText("Cannot save file");
             alert.showAndWait();
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("File Warning");
+            alert.setHeaderText("Save error");
+            alert.setContentText("No file to save");
+            alert.showAndWait();
         }
     }
     /**
      * Makes image in imageview grayscaled
      */
     public void grayscale(ActionEvent event) {
-        view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
-            return pixelColor.grayscale();
-        }));
+        try {
+            view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
+                return pixelColor.grayscale();
+            }));
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Image Warning");
+            alert.setHeaderText("No image detected");
+            alert.setContentText("Please open image before selecting a change.");
+            alert.showAndWait();
+        }
     }
     /**
      * Makes image in imageview negative
      */
     public void negative(ActionEvent event) {
-        view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
-            return pixelColor.invert();
-        }));
+        try {
+            view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
+                return pixelColor.invert();
+            }));
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Image Warning");
+            alert.setHeaderText("No image detected");
+            alert.setContentText("Please open image before selecting a change.");
+            alert.showAndWait();
+        }
     }
     /**
      * Makes image in imageview red
      */
     public void red(ActionEvent event){
-        view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
-            Color color = new Color(pixelColor.getRed(), 0, 0, 1);
-            return color;
-        }));
+        try {
+            view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
+                Color color = new Color(pixelColor.getRed(), 0, 0, 1);
+                return color;
+            }));
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Image Warning");
+            alert.setHeaderText("No image detected");
+            alert.setContentText("Please open image before selecting a change.");
+            alert.showAndWait();
+        }
     }
     /**
      * Makes image in imageview redGray
      */
     public void redGray(ActionEvent event){
-        view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
-            if(y % 2 == 0){
-                return pixelColor.grayscale();
-            } else {
-                Color color = new Color(pixelColor.getRed(), 0, 0, 1);
-                return color;
-            }
-        }));
+        try {
+            view.setImage(transformImage(view.getImage(), (y, pixelColor) -> {
+                if (y % 2 == 0) {
+                    return pixelColor.grayscale();
+                } else {
+                    Color color = new Color(pixelColor.getRed(), 0, 0, 1);
+                    return color;
+                }
+            }));
+        } catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Image Warning");
+            alert.setHeaderText("No image detected");
+            alert.setContentText("Please open image before selecting a change.");
+            alert.showAndWait();
+        }
     }
     /**
      * Sets path of original image.
@@ -228,7 +269,8 @@ public class ImageController {
         return this.view.getImage();
     }
 
-    private static Image transformImage(Image image, Transformable transform) {
+    private static Image transformImage(Image image, Transformable transform)
+            throws NullPointerException{
         WritableImage writableImage = null;
         writableImage = new WritableImage(
                 (int) image.getWidth(),
